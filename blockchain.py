@@ -1,16 +1,26 @@
 import hashlib
-#hashed = hashlib.sha256(data).hexdigest()
 
+MAX_ITERS = pow(10, 5)
 class block:
     def __init__(self, index, timestamp, data, previous_hash=''):
         self.index = index
         self.previous_hash = previous_hash
         self.timestamp = timestamp
         self.data = data
+        self.nonce = 0
         self.hash = self.calc_hash()
+        
+
+    def mine(self, difficulty):
+        for i in range(MAX_ITERS):
+            self.nonce += 1
+            self.hash = self.calc_hash()
+            if self.hash.startswith('0' * difficulty):
+                print('block mined', self.hash)
+                break
 
     def calc_hash(self):
-        return hashlib.sha256(str(self.index) + self.previous_hash + str(self.timestamp) + str(self.data))
+        return str(hashlib.sha256(str(self.index) + str(self.data) + str(self.previous_hash) + str(self.timestamp) + str(self.data) + str(self.nonce) ).hexdigest())
 
 
 class blockchain:
@@ -24,9 +34,9 @@ class blockchain:
     def get_latest_block(self):
         return self.chain[len(self.chain) - 1]
 
-    def add_block(self, new_block):
+    def add_block(self, new_block, difficulty):
         new_block.previous_hash = self.get_latest_block().hash
-        new_block.hash = new_block.calc_hash()
+        new_block.mine(difficulty)
         self.chain.append(new_block)
 
     def is_chain_valid(self):
@@ -41,13 +51,18 @@ class blockchain:
                     return False
 
 
-                return True    
-        return True
+                return True # entire chain consistent    
+        return True #chain with genesis_block only
 
 
     
 
+data = ['xyz','abcxsadaasdasgawsz']
 bc = blockchain()
-print(bc.is_chain_valid())
-b = block(1,2331,'xzasda', '4')
-print(str({'x':'4'}))
+b = block(1,2331,data)
+b1 = block(1,2331,data)
+bc.add_block(b, 3)
+bc.add_block(b1, 3)
+#adding the same block twice results in error while checking consistency
+print('checking consistency', bc.is_chain_valid())
+
