@@ -1,13 +1,20 @@
 import hashlib
 
 MAX_ITERS = pow(10, 5)
+
+class transaction:
+    def __init__(self, from_addr, to_addr, amount):
+        self.from_addr = from_addr
+        self.to_addr = to_addr
+        self.amount = amount
+
+
 class block:
-    def __init__(self, index, timestamp, data, previous_hash=''):
-        self.index = index
+    def __init__(self, timestamp, transactions, previous_hash=''):
         self.previous_hash = previous_hash
         self.timestamp = timestamp
-        self.data = data
         self.nonce = 0
+        self.transactions = transactions 
         self.hash = self.calc_hash()
         
 
@@ -20,16 +27,38 @@ class block:
                 break
 
     def calc_hash(self):
-        return str(hashlib.sha256(str(self.index) + str(self.data) + str(self.previous_hash) + str(self.timestamp) + str(self.data) + str(self.nonce) ).hexdigest())
+        return str(hashlib.sha256(str(self.transactions) + str(self.previous_hash) + str(self.timestamp) + str(self.nonce) ).hexdigest())
 
 
 class blockchain:
     def __init__(self):
-        self.chain = []
-        self.chain.append(self.create_genesis_block())
+        self.chain = [self.create_genesis_block()]
+        self.pending_transactions = []
+        self.mining_reward = 100
+
+    def get_balance(address):
+        balance = 0
+        for block in self.chain:
+            for tx in block.transactions:
+                if tx.from_addr == address:
+                    balance -= tx.amount
+
+                if tx.to_addr == address:
+                    balance += tx.amount
+
+        return balance
+
+    def create_transaction(self, transaction):
+        self.pending_transactions.append(transaction)
+
+    def mine_pending_transactions(self, mining_reward_address):
+        b = block(1234, self.pending_transactions, self.get_latest_block().hash)
+        b.mine(2)
+        self.chain.append(b) 
+        self.pending_transactions = [transaction(None, mining_reward_address, self.mining_reward)]
 
     def create_genesis_block(self):
-        return block(0, '01/01/1970', 'genesis block', '0')
+        return block('01/01/1970', 'genesis block', '0')
 
     def get_latest_block(self):
         return self.chain[len(self.chain) - 1]
@@ -45,9 +74,14 @@ class blockchain:
                 previous_block = self.chain[i-1]
 
                 if current_block.hash != current_block.calc_hash():
+                    print('1st')
                     return False
 
                 if current_block.previous_hash != previous_block.hash:
+                    print('2nd')
+                    print('i = ', i)
+                    print('current->previous', current_block.previous_hash)
+                    print('previous', previous_block.hash)
                     return False
 
 
@@ -57,12 +91,10 @@ class blockchain:
 
     
 
-data = ['xyz','abcxsadaasdasgawsz']
 bc = blockchain()
-b = block(1,2331,data)
-b1 = block(1,2331,data)
-bc.add_block(b, 3)
-bc.add_block(b1, 3)
-#adding the same block twice results in error while checking consistency
+bc.create_transaction(transaction('addr1', 'addr2', 100))
+bc.create_transaction(transaction('addr2', 'addr1', 50))
+bc.mine_pending_transactions('receiver address')
+print('len bc', len(bc.chain))
 print('checking consistency', bc.is_chain_valid())
 
