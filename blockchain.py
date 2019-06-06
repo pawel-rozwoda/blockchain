@@ -61,9 +61,8 @@ class blockchain:
         self.pending_transactions.append(transaction)
 
     def mine_pending_transactions(self, mining_reward_address):
-        b = block(0, self.pending_transactions, self.get_latest_block().hash)
+        b = block(datetime.now().timestamp(), self.pending_transactions, self.get_latest_block().hash)
         b.mine(2)
-        b.timestamp = datetime.now().timestamp()
         self.chain.append(b) 
         self.pending_transactions = [transaction(None, mining_reward_address, self.mining_reward)]
 

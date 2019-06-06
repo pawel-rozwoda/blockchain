@@ -8,15 +8,16 @@ app = Flask(__name__)
 
 #initial values
 bc = blockchain()
-bc.mine_pending_transactions('miner1')
-bc.create_transaction(transaction('miner1', 'addr1', 50))
-bc.create_transaction(transaction('addr1', 'addr2', 20))
+bc.mine_pending_transactions('miner1')                    #miner1: 100
+bc.create_transaction(transaction('miner1', 'addr1', 50)) #miner1: 50  addr1:50
+bc.create_transaction(transaction('addr1', 'addr2', 20))  #miner1: 50  addr1:30  addr2: 20      
 bc.mine_pending_transactions('miner1')
 
 
 @app.route('/')
 def hello():
-    return render_template('home.html', chain=bc.chain)
+    is_valid = bc.is_chain_valid()
+    return render_template('home.html', chain=bc.chain, is_valid=is_valid)
 
 
 @app.route('/create-transaction', methods=['GET', 'POST'])
@@ -28,9 +29,6 @@ def create_transaction():
         from_addr = request.form['from']
         to_addr = request.form['to']
         amount = request.form['amount']
-        # print(request.form['from'])
-        # print(request.form['to'])
-        # print(request.form['amount'])
         bc.create_transaction(transaction(from_addr, to_addr, float(amount)))
         return render_template('success.html')
 
