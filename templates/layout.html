@@ -1,0 +1,40 @@
+    <!DOCTYPE html>
+    <html>
+		<style>
+			label {
+				display: inline-block;
+				width: 140px;
+				text-align: right;
+			} 
+			form {
+				text-align: center; 
+			}
+			.mine_button {
+				color: red;
+				font-weight: bold;
+			}
+		</style> 
+      <body>
+			<h2>Blockchain System</h2>
+	<a class='mine_button' id="sth" href="/mine">mine</a>
+          <div class="container">
+            <strong>
+						 <form action="/create-transaction">
+									 <input type="submit" value="create transaction" />
+						 </form>
+
+						 <form action="/check-balance">
+									 <input type="submit" value="check balance" />
+						 </form>
+
+						 <form action="/wallet-gen">
+									 <input type="submit" value="generate wallet" />
+						 </form>
+              <!--<ul class="menu">-->
+								<!--<li><a href="/wallet-gen">wallet</li>-->
+              <!--</ul>-->
+            </strong>
+          </div>
+		{% block body %}{% endblock %}
+      </body>
+    </html>

@@ -1,4 +1,5 @@
-import hashlib
+import hashlib 
+from datetime import datetime
 
 MAX_ITERS = pow(10, 5)
 
@@ -27,7 +28,7 @@ class block:
                 break
 
     def calc_hash(self):
-        return str(hashlib.sha256(str(self.transactions) + str(self.previous_hash) + str(self.timestamp) + str(self.nonce) ).hexdigest())
+        return str(hashlib.sha256((str(self.transactions) + str(self.previous_hash) + str(self.timestamp) + str(self.nonce)).encode('utf-8') ).hexdigest())
 
 
 class blockchain:
@@ -36,7 +37,13 @@ class blockchain:
         self.pending_transactions = []
         self.mining_reward = 100
 
-    def get_balance(address):
+    def verify_signature(transaction, sender_address, signature):
+        sender_address = RSA.importKey(binascii.unhexlify(sender_address))
+        verifier = PKCS1_v1_5.new(public_key)
+        h = SHA.new(str(transaction).encode('utf8'))
+        return verifier.verify(h, binascii.unhexlify(signature))
+
+    def get_balance(self, address):
         balance = 0
         for block in self.chain:
             for tx in block.transactions:
@@ -49,16 +56,21 @@ class blockchain:
         return balance
 
     def create_transaction(self, transaction):
+    # def create_transaction(self, transaction, signature):
+        # verification = self.verify_signature(transaction, transaction.from_addr, signature)
         self.pending_transactions.append(transaction)
 
     def mine_pending_transactions(self, mining_reward_address):
-        b = block(1234, self.pending_transactions, self.get_latest_block().hash)
+        b = block(0, self.pending_transactions, self.get_latest_block().hash)
         b.mine(2)
+        b.timestamp = datetime.now().timestamp()
         self.chain.append(b) 
         self.pending_transactions = [transaction(None, mining_reward_address, self.mining_reward)]
 
     def create_genesis_block(self):
-        return block('01/01/1970', 'genesis block', '0')
+        # return block('01/01/1970', 'genesis block', '0')
+        # return block('01/01/1970', [], 'genesis block')
+        return block(0, [], 'genesis block')
 
     def get_latest_block(self):
         return self.chain[len(self.chain) - 1]
@@ -91,10 +103,18 @@ class blockchain:
 
     
 
-bc = blockchain()
-bc.create_transaction(transaction('addr1', 'addr2', 100))
-bc.create_transaction(transaction('addr2', 'addr1', 50))
-bc.mine_pending_transactions('receiver address')
-print('len bc', len(bc.chain))
-print('checking consistency', bc.is_chain_valid())
+# bc = blockchain()
+# # bc.create_transaction(transaction('addr1', 'addr2', 100))
+# # bc.create_transaction(transaction('addr2', 'addr1', 50))
+# bc.mine_pending_transactions('receiver')
 
+# # bc.create_transaction(transaction('addr1', 'addr2', 80))
+# bc.mine_pending_transactions('receiver')
+# bc.create_transaction(transaction('receiver', 'addr1', 100))
+# # bc.create_transaction(transaction('addr1', 'addr2', 20))
+# bc.create_transaction(transaction('receiver', 'addr2', 100))
+
+# # bc.mine_pending_transactions('receiver')
+
+# print('balance', bc.get_balance('receiver'))
+# print('checking consistency', bc.is_chain_valid()) 
